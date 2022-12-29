@@ -1,16 +1,35 @@
 part of 'gamelist_bloc.dart';
 
-abstract class GamelistEvent extends Equatable {
-  const GamelistEvent();
+abstract class GameListEvent extends Equatable {
+  const GameListEvent(this.steamid);
 
-  @override
-  List<Object> get props => [];
-}
-
-class GetGames extends GamelistEvent {
   final String steamid;
 
-  const GetGames(this.steamid);
+  bool IsAllGamesEvent();
+
+  @override
+  List<Object> get props => [steamid];
+}
+
+class GetAllGames extends GameListEvent {
+  const GetAllGames(String steamid) : super(steamid);
+
+  @override
+  bool IsAllGamesEvent() {
+    return true;
+  }
+
+  @override
+  List<Object> get props => [steamid];
+}
+
+class GetRecentGames extends GameListEvent {
+  const GetRecentGames(String steamid) : super(steamid);
+
+  @override
+  bool IsAllGamesEvent() {
+    return false;
+  }
 
   @override
   List<Object> get props => [steamid];

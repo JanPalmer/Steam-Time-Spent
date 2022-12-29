@@ -1,36 +1,36 @@
 part of 'gamelist_bloc.dart';
 
-enum AllGamesStatus {
+enum GameListStatus {
   initial,
   success,
   error,
   loading,
 }
 
-extension AllGamesStatusX on AllGamesStatus {
-  bool get isInitial => this == AllGamesStatus.initial;
-  bool get isSuccess => this == AllGamesStatus.success;
-  bool get isError => this == AllGamesStatus.error;
-  bool get isLoading => this == AllGamesStatus.loading;
+extension GameListStatusX on GameListStatus {
+  bool get isInitial => this == GameListStatus.initial;
+  bool get isSuccess => this == GameListStatus.success;
+  bool get isError => this == GameListStatus.error;
+  bool get isLoading => this == GameListStatus.loading;
 }
 
-class AllGamesState extends Equatable {
-  const AllGamesState({
-    this.status = AllGamesStatus.initial,
+class GameListLoadedState extends Equatable {
+  const GameListLoadedState({
+    this.status = GameListStatus.initial,
     required this.games,
   });
 
   final List<Game> games;
-  final AllGamesStatus status;
+  final GameListStatus status;
 
   @override
   List<Object> get props => [status, games];
 
-  AllGamesState copyWith({
+  GameListLoadedState copyWith({
     List<Game>? games,
-    AllGamesStatus? status,
+    GameListStatus? status,
   }) {
-    return AllGamesState(
+    return GameListLoadedState(
       games: games ?? this.games,
       status: status ?? this.status,
     );

@@ -9,10 +9,17 @@ class GameDataSource {
 
   static const empty = <Game>[];
 
-  static Future<List<Game>> fetchGames(String steamID) async {
+  static Future<List<Game>> fetchGames(String steamID, bool getAllGames) async {
     String steamAPIkey = '8214D13AC7E97D3848A107CD015F2F3A';
-    String url =
-        """http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=$steamAPIkey&steamid=$steamID&include_appinfo=true&format=json""";
+    String url;
+
+    if (getAllGames) {
+      url =
+          """http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=$steamAPIkey&steamid=$steamID&include_appinfo=true&format=json""";
+    } else {
+      url =
+          """http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key=$steamAPIkey&steamid=$steamID&include_appinfo=true&format=json""";
+    }
 
     final response = await http.get(
       Uri.parse(url),
@@ -20,7 +27,7 @@ class GameDataSource {
 
     if (response.statusCode == 200) {
       // Decoding the received JSON file
-      print('Parsing response body');
+      //print('Parsing response body');
       Map<String, dynamic> responseMap = jsonDecode(response.body);
       if (responseMap.values.first == null) throw Exception('No user found');
       Map<String, dynamic> gamescountMap = responseMap.values.first;
@@ -28,8 +35,8 @@ class GameDataSource {
       if (gamescountMap.values.first == null) throw Exception('No user found');
       List<dynamic> gamesMap = gamescountMap.values.last;
 
-      print(gamesMap.first);
-      print(gamesMap.length);
+      // print(gamesMap.first);
+      // print(gamesMap.length);
 
       List<Game> games = List.empty(growable: true);
 

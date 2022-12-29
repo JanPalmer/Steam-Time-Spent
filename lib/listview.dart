@@ -21,47 +21,110 @@ import 'package:steamtimespent/userbloc/user_bloc.dart';
 //   }
 // }
 
-class GameListview extends StatefulWidget {
-  const GameListview({super.key});
+class GameListScreen extends StatefulWidget {
+  const GameListScreen({super.key});
 
   @override
-  State<StatefulWidget> createState() => _StateShowAll();
+  State<StatefulWidget> createState() => _StateShowGames();
 }
 
-class _StateShowAll extends State<GameListview> {
-  static const _gameDataSource = GameDataSource();
-  List<Game> _games = [];
+enum CategoryToDisplay { AllGames, Recent }
 
-  @override
-  void initState() {
-    super.initState();
-    // _fetchGameData();
-  }
-
-  // Future<void> _fetchGameData() async {
-  //   final games = await _gameDataSource.getGames();
-  //   setState(() => _games = games);
-  // }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //       appBar: AppBar(title: const HeaderTitle()),
-  //       body:
-  //           //const HeaderTitle(),
-  //           ListView.builder(
-  //         itemCount: _games.length,
-  //         itemBuilder: (context, index) {
-  //           final item = _games[index];
-  //           return ListTile(title: Text(item.name), onTap: () {});
-  //         },
-  //       ));
-  // }
+class _StateShowGames extends State<GameListScreen> {
+  //CategoryToDisplay currentCategory = CategoryToDisplay.AllGames;
+  bool displayAllGames = false;
 
   @override
   Widget build(BuildContext context) {
+    final steamID = context.watch<GameListBloc>().steamID;
+
     return Scaffold(
-        appBar: AppBar(title: const HeaderTitle()), body: GamesListWidget());
+        appBar: AppBar(title: const HeaderTitle()),
+        body: Padding(
+          padding: const EdgeInsets.only(
+            top: 5.0,
+            bottom: 5.0,
+          ),
+          child: Column(children: [
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      displayAllGames = false;
+                      context.read<GameListBloc>().add(GetRecentGames(steamID));
+                    });
+                  },
+                  child: CategoryButton(
+                      textToDisplay: 'Recent Games',
+                      isSelected: !displayAllGames),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      displayAllGames = true;
+                      context.read<GameListBloc>().add(GetAllGames(steamID));
+                    });
+                  },
+                  child: CategoryButton(
+                      textToDisplay: 'All Games', isSelected: displayAllGames),
+                ),
+              ],
+            ),
+            GamesListWidget(),
+          ]),
+        ));
+  }
+}
+
+class CategoryButton extends StatelessWidget {
+  const CategoryButton({
+    super.key,
+    required this.textToDisplay,
+    required this.isSelected,
+  });
+
+  final bool isSelected;
+  final String textToDisplay;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            width: 100,
+            height: 50,
+            color: isSelected ? Colors.black54 : Colors.blueGrey,
+            curve: Curves.easeIn,
+            child: Center(
+              child: Text(
+                textToDisplay,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black,
+                ),
+              ),
+            )));
+  }
+}
+
+class GamesListWidget extends StatelessWidget {
+  const GamesListWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<GameListBloc, GameListLoadedState>(
+        builder: (context, state) {
+      return state.status.isSuccess
+          ? GamesSuccessWidget(games: state.games)
+          : state.status.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : const Center(
+                  child: Text('load error'),
+                );
+    });
   }
 }
 
@@ -97,25 +160,6 @@ class HeaderTitle extends StatelessWidget {
   }
 }
 
-class GamesListWidget extends StatelessWidget {
-  const GamesListWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<GamelistBloc, AllGamesState>(builder: (context, state) {
-      return state.status.isSuccess
-          ? GamesSuccessWidget(games: state.games)
-          : state.status.isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : const Center(
-                  child: Text('load error'),
-                );
-    });
-  }
-}
-
 class GamesSuccessWidget extends StatelessWidget {
   const GamesSuccessWidget({super.key, required this.games});
 
@@ -127,7 +171,7 @@ class GamesSuccessWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          height: MediaQuery.of(context).size.height - 56.0,
+          height: MediaQuery.of(context).size.height - 56.0 - 60.0,
           child: ListView.separated(
               physics: AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(
@@ -142,13 +186,18 @@ class GamesSuccessWidget extends StatelessWidget {
                       (item.img_icon_url != '')
                           ? ImageRounded(imageurl: item.GetIconURL())
                           : Text('💀'),
+                      Spacer(),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(item.name),
-                          Text(item.playtime_forever.toString()),
+                          Text('Time spent: ' +
+                              (item.playtime_forever / 60.0).toString()),
                         ],
-                      )
+                      ),
+                      Spacer(
+                        flex: 4,
+                      ),
                     ]),
                     onTap: () {});
               },
