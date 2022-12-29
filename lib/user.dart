@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ui';
 import 'package:http/http.dart' as http;
 
 class User {
@@ -34,40 +33,22 @@ class User {
     );
 
     if (response.statusCode == 200) {
-      //final body = json.decode(response.body) as List;
+      // Decoding the received JSON file
       Map<String, dynamic> responseMap = jsonDecode(response.body);
       if (responseMap.values.first == null) throw Exception('No user found');
       Map<String, dynamic> playersMap = responseMap.values.first;
-      print('playermap\n');
-      // print(playersMap.keys);
-      // print(playersMap.values);
       if (playersMap.values.first == null) throw Exception('No user found');
       List<dynamic> steamuserMap = playersMap.values.first;
-      // print('steamusermap length: ' + steamuserMap.length.toString());
-      print(steamuserMap);
-      // List<dynamic> playersList = responseMap['response'] as List<dynamic>;
-      // Map<String, dynamic> playersMap = jsonDecode(playersList.first);
-      // List<dynamic> steamuserList = playersMap['players'] as List<dynamic>;
-      // Map<String, dynamic> steamuserMap = jsonDecode(steamuserList.first);
       User newuser = User.fromJson(steamuserMap.first);
-      // print(steamuserMap.keys);
-      // print(steamuserMap.values);
-      //print('Username:' + newuser.personaname + '\n');
-      //map.entries.first.toString() + ' ' + newuser.steamid + '\n'
+
       if (newuser.steamid == '') {
         throw Exception('No user found');
       } //return null;
       if (newuser.visibilitystate != 3) {
         throw Exception('User profile is private');
       }
-      return newuser;
 
-      // body.map((dynamic json) {
-      //   final map = json as Map<String, dynamic>;
-      //   User newuser = User.fromJson(map);
-      //   if (newuser.steamid == '') throw Exception('No user found');
-      //   return newuser;
-      //});
+      return newuser;
     }
     throw Exception('Internet connection error');
   }

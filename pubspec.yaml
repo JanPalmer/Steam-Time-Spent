@@ -36,6 +36,7 @@ dependencies:
   collection: ^1.15.0
   bloc_concurrency: ^0.2.0
   equatable: ^2.0.3
+  cached_network_image: ^3.2.0
 
 
   # The following adds the Cupertino Icons font to your application.

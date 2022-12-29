@@ -8,8 +8,10 @@ abstract class GamelistEvent extends Equatable {
 }
 
 class GetGames extends GamelistEvent {
-  const GetGames();
+  final String steamid;
+
+  const GetGames(this.steamid);
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [steamid];
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:steamtimespent/game.dart';
+import 'package:steamtimespent/gamedatasource.dart';
+import 'package:steamtimespent/gamelistbloc/gamelist_bloc.dart';
 import 'package:steamtimespent/listview.dart';
 import 'package:steamtimespent/user.dart';
 import 'package:steamtimespent/userbloc/user_bloc.dart';
@@ -27,6 +30,7 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
   TextEditingController nameController = TextEditingController();
   bool isLoading = false;
   User? steamuser;
+  List<Game>? allgames;
 
   void _loadSteamProfile() async {
     setState(() {
@@ -63,9 +67,12 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                     body: MultiBlocProvider(
                   providers: [
                     BlocProvider(
-                      create: (context) =>
-                          SteamUserBloc()..add(LoadSteamUser(user)),
-                    )
+                        create: (context) =>
+                            SteamUserBloc()..add(LoadSteamUser(user))),
+                    BlocProvider(
+                      create: (context) => GamelistBloc(steamID: user.steamid)
+                        ..add(GetGames(user.steamid)),
+                    ),
                   ],
                   child: const GameListview(),
                 ))));
