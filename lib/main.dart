@@ -10,7 +10,12 @@ void main() {
       //title: 'Steam Time Spent',
       theme: ThemeData(primarySwatch: Colors.blueGrey),
       home: BlocProvider(
-        create: (context) => SteamUserBloc(),
-        child: SteamIDEntryScreen(),
-      )));
+          create: (context) => SteamUserBloc(),
+          child: ConstrainedBox(
+              constraints:
+                  BoxConstraints.loose(const Size(300, double.infinity)),
+              child: Center(
+                widthFactor: 0.5,
+                child: SteamIDEntryScreen(),
+              )))));
 }

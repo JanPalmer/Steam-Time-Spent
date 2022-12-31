@@ -71,7 +71,7 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                             SteamUserBloc()..add(LoadSteamUser(user))),
                     BlocProvider(
                       create: (context) => GameListBloc(steamID: user.steamid)
-                        ..add(GetAllGames(user.steamid)),
+                        ..add(GetRecentGames(user.steamid)),
                     ),
                   ],
                   child: const GameListScreen(),
@@ -81,57 +81,69 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Steam Time Spent')),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(10),
-                child: Text(
-                  textPrompt,
-                  style: const TextStyle(fontSize: 20),
-                  selectionColor: (currstate == InputScreenState.fetchingError)
-                      ? Colors.red
-                      : Colors.blueGrey,
-                )),
-            Container(
-              padding: const EdgeInsets.all(10),
-              child: TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "64-bit SteamID",
+        appBar: AppBar(title: const Text('Steam Time Spent')),
+        body: Container(
+            color: Colors.black87,
+            child: Center(
+              child: ConstrainedBox(
+                constraints:
+                    BoxConstraints.loose(const Size(500, double.infinity)),
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.all(10),
+                        child: Text(
+                          textPrompt,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                          ),
+                        )),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      child: TextField(
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          fillColor: Colors.white,
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white)),
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white)),
+                          labelStyle: TextStyle(color: Colors.white),
+                          labelText: "64-bit SteamID",
+                        ),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    if (currstate == InputScreenState.loading)
+                      const Expanded(
+                          child: Center(child: CircularProgressIndicator()))
+                    else
+                      Container(
+                          height: 50,
+                          width: 200,
+                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                          child: ElevatedButton(
+                            child: const Text(
+                              'Load data',
+                              textScaleFactor: 1.3,
+                            ),
+                            onPressed: () {
+                              _loadSteamProfile();
+                            },
+                          )),
+                    TextButton(
+                      onPressed: () {
+                        //forgot password screen
+                      },
+                      child: const Text(
+                        'How to find your SteamID64',
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            if (currstate == InputScreenState.loading)
-              const Expanded(child: Center(child: CircularProgressIndicator()))
-            else
-              Container(
-                  height: 50,
-                  width: 200,
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                  child: ElevatedButton(
-                    child: const Text(
-                      'Load data',
-                      textScaleFactor: 1.3,
-                    ),
-                    onPressed: () {
-                      _loadSteamProfile();
-                    },
-                  )),
-            TextButton(
-              onPressed: () {
-                //forgot password screen
-              },
-              child: const Text(
-                'How to find your SteamID64',
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+            )));
   }
 }

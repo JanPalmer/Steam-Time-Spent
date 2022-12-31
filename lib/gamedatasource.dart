@@ -11,18 +11,38 @@ class GameDataSource {
 
   static Future<List<Game>> fetchGames(String steamID, bool getAllGames) async {
     String steamAPIkey = '8214D13AC7E97D3848A107CD015F2F3A';
-    String url;
+    // String url;
 
+    // if (getAllGames) {
+    //   url =
+    //       """http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=$steamAPIkey&steamid=$steamID&include_appinfo=true&format=json""";
+    // } else {
+    //   url =
+    //       """http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key=$steamAPIkey&steamid=$steamID&include_appinfo=true&format=json""";
+    // }
+
+    Uri uri;
     if (getAllGames) {
-      url =
-          """http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=$steamAPIkey&steamid=$steamID&include_appinfo=true&format=json""";
+      uri = Uri.http(
+          'api.steampowered.com', '/IPlayerService/GetOwnedGames/v0001/', {
+        'key': steamAPIkey,
+        'steamid': steamID,
+        'include_appinfo': 'true',
+        'format': 'json'
+      });
     } else {
-      url =
-          """http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key=$steamAPIkey&steamid=$steamID&include_appinfo=true&format=json""";
+      uri = Uri.http('api.steampowered.com',
+          '/IPlayerService/GetRecentlyPlayedGames/v0001/', {
+        'key': steamAPIkey,
+        'steamid': steamID,
+        'include_appinfo': 'true',
+        'format': 'json'
+      });
     }
 
     final response = await http.get(
-      Uri.parse(url),
+      uri,
+      //Uri.parse(url),
     );
 
     if (response.statusCode == 200) {

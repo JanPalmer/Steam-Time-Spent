@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:steamtimespent/game.dart';
@@ -28,11 +29,27 @@ class GameListScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _StateShowGames();
 }
 
-enum CategoryToDisplay { AllGames, Recent }
+enum CategoryToDisplay {
+  AllGames,
+  Recent,
+}
+
+enum SortOrder {
+  Alphabethical,
+  ReverseAlphabethical,
+  //MostCompleted,
+  //LeastCompleted,
+}
+
+SortOrder NextSortOrder(SortOrder order) {
+  final nextIndex = (order.index + 1) % SortOrder.values.length;
+  return SortOrder.values[nextIndex];
+}
 
 class _StateShowGames extends State<GameListScreen> {
   //CategoryToDisplay currentCategory = CategoryToDisplay.AllGames;
   bool displayAllGames = false;
+  SortOrder sortOrder = SortOrder.Alphabethical;
 
   @override
   Widget build(BuildContext context) {
@@ -40,40 +57,84 @@ class _StateShowGames extends State<GameListScreen> {
 
     return Scaffold(
         appBar: AppBar(title: const HeaderTitle()),
-        body: Padding(
-          padding: const EdgeInsets.only(
-            top: 5.0,
-            bottom: 5.0,
-          ),
-          child: Column(children: [
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      displayAllGames = false;
-                      context.read<GameListBloc>().add(GetRecentGames(steamID));
-                    });
-                  },
-                  child: CategoryButton(
-                      textToDisplay: 'Recent Games',
-                      isSelected: !displayAllGames),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      displayAllGames = true;
-                      context.read<GameListBloc>().add(GetAllGames(steamID));
-                    });
-                  },
-                  child: CategoryButton(
-                      textToDisplay: 'All Games', isSelected: displayAllGames),
-                ),
-              ],
-            ),
-            GamesListWidget(),
-          ]),
-        ));
+        body: Container(
+            color: Colors.black87,
+            child: Center(
+                child: ConstrainedBox(
+                    constraints:
+                        BoxConstraints.loose(const Size(500, double.infinity)),
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: 5.0,
+                        bottom: 5.0,
+                      ),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      displayAllGames = false;
+                                      context
+                                          .read<GameListBloc>()
+                                          .add(GetRecentGames(steamID));
+                                    });
+                                  },
+                                  child: CategoryButton(
+                                      textToDisplay: 'Recent Games',
+                                      isSelected: !displayAllGames),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      displayAllGames = true;
+                                      context
+                                          .read<GameListBloc>()
+                                          .add(GetAllGames(steamID));
+                                    });
+                                  },
+                                  child: CategoryButton(
+                                      textToDisplay: 'All Games',
+                                      isSelected: displayAllGames),
+                                ),
+                                Spacer(),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      List<Game> games = context
+                                          .read<GameListBloc>()
+                                          .state
+                                          .games;
+                                      sortOrder = NextSortOrder(sortOrder);
+                                      switch (sortOrder) {
+                                        case SortOrder.Alphabethical:
+                                          games.sort(((a, b) =>
+                                              a.name.compareTo(b.name)));
+                                          break;
+                                        case SortOrder.ReverseAlphabethical:
+                                          games.sort(((a, b) =>
+                                              b.name.compareTo(a.name)));
+                                          break;
+                                        // case SortOrder.MostCompleted:
+                                        //   // TODO: Handle this case.
+                                        //   break;
+                                        // case SortOrder.LeastCompleted:
+                                        //   // TODO: Handle this case.
+                                        //   break;
+                                      }
+                                    });
+                                  },
+                                  child: SortOrderButton(
+                                    currentSortOrder: sortOrder,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            GamesListWidget(),
+                          ]),
+                    )))));
   }
 }
 
@@ -95,16 +156,52 @@ class CategoryButton extends StatelessWidget {
             duration: const Duration(milliseconds: 500),
             width: 100,
             height: 50,
-            color: isSelected ? Colors.black54 : Colors.blueGrey,
+            color: isSelected ? Colors.white38 : Colors.white10,
             curve: Curves.easeIn,
             child: Center(
               child: Text(
                 textToDisplay,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black,
-                ),
+                style: const TextStyle(color: Colors.white),
               ),
             )));
+  }
+}
+
+class SortOrderButton extends StatelessWidget {
+  const SortOrderButton({
+    super.key,
+    required this.currentSortOrder,
+  });
+
+  final SortOrder currentSortOrder;
+
+  String ImageToDisplay() {
+    switch (currentSortOrder) {
+      case SortOrder.Alphabethical:
+        return "assets/sort_alphabeth.png";
+      case SortOrder.ReverseAlphabethical:
+        return "assets/sort_alphabeth_reverseorder.jpg";
+      // case SortOrder.MostCompleted:
+      //   return "";
+      // case SortOrder.LeastCompleted:
+      //   return "";
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 500),
+          width: 50,
+          height: 50,
+          color: Colors.blueGrey,
+          curve: Curves.easeIn,
+          child: Center(
+            child: Image.asset(ImageToDisplay()),
+          ),
+        ));
   }
 }
 
@@ -137,18 +234,19 @@ class HeaderTitle extends StatelessWidget {
         builder: ((context, state) {
       if (state is SteamUserLoaded) {
         User steamuser = state.props.first as User;
-        return Row(
+        return Center(
+            child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Padding(
-                padding: EdgeInsets.all(24.0),
-                child: ImageRounded(
-                  imageurl: steamuser.avatarurl,
-                )),
+            Spacer(),
+            ImageRounded(
+              imageurl: steamuser.avatarurl,
+            ),
             //Spacer(),
             Text(' ' + steamuser.personaname),
+            Spacer(),
           ],
-        );
+        ));
       } else {
         return Container(
           height: 100,
@@ -182,23 +280,40 @@ class GamesSuccessWidget extends StatelessWidget {
               itemBuilder: (context, index) {
                 final item = games[index];
                 return ListTile(
-                    title: Row(children: [
-                      (item.img_icon_url != '')
-                          ? ImageRounded(imageurl: item.GetIconURL())
-                          : Text('💀'),
-                      Spacer(),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(item.name),
-                          Text('Time spent: ' +
-                              (item.playtime_forever / 60.0).toString()),
-                        ],
-                      ),
-                      Spacer(
-                        flex: 4,
-                      ),
-                    ]),
+                    title: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                            color: Colors.white10,
+                            child: Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Row(children: [
+                                  (item.img_icon_url != '')
+                                      ? ImageRounded(
+                                          imageurl: item.GetIconURL())
+                                      : Text('💀'),
+                                  Spacer(),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      AutoSizeText(
+                                        item.name,
+                                        style: TextStyle(color: Colors.white),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.fade,
+                                      ),
+                                      Text(
+                                        'Time spent: ' +
+                                            (item.playtime_forever / 60.0)
+                                                .toString(),
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                  Spacer(
+                                    flex: 4,
+                                  ),
+                                ])))),
                     onTap: () {});
               },
               separatorBuilder: (_, __) => const SizedBox(
