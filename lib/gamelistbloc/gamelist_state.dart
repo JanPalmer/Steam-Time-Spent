@@ -16,23 +16,39 @@ extension GameListStatusX on GameListStatus {
 
 class GameListLoadedState extends Equatable {
   const GameListLoadedState({
-    this.status = GameListStatus.initial,
-    required this.games,
+    required this.recentGames,
+    required this.allGames,
+    required this.recentGamesEntries,
+    required this.allGamesEntries,
+    this.recentStatus = GameListStatus.initial,
+    this.allStatus = GameListStatus.initial,
   });
 
-  final List<Game> games;
-  final GameListStatus status;
+  final List<Game> recentGames;
+  final List<Game> allGames;
+  final List<HowLongToBeatEntry> recentGamesEntries;
+  final List<HowLongToBeatEntry> allGamesEntries;
+  final GameListStatus recentStatus;
+  final GameListStatus allStatus;
 
   @override
-  List<Object> get props => [status, games];
+  List<Object> get props => [recentStatus, allStatus, recentGames, allGames];
 
   GameListLoadedState copyWith({
-    List<Game>? games,
-    GameListStatus? status,
+    List<Game>? recentGames,
+    List<Game>? allGames,
+    final List<HowLongToBeatEntry>? recentGamesEntries,
+    final List<HowLongToBeatEntry>? allGamesEntries,
+    GameListStatus? recentStatus,
+    GameListStatus? allStatus,
   }) {
     return GameListLoadedState(
-      games: games ?? this.games,
-      status: status ?? this.status,
+      recentGames: recentGames ?? this.recentGames,
+      allGames: allGames ?? this.allGames,
+      recentGamesEntries: recentGamesEntries ?? this.recentGamesEntries,
+      allGamesEntries: allGamesEntries ?? this.allGamesEntries,
+      recentStatus: recentStatus ?? this.recentStatus,
+      allStatus: allStatus ?? this.allStatus,
     );
   }
 }

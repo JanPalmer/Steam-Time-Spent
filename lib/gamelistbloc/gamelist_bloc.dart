@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:steamtimespent/HLTB/howlongtobeat.dart';
 import 'package:steamtimespent/gamedatasource.dart';
 
 import '../game.dart';
@@ -13,9 +14,14 @@ class GameListBloc extends Bloc<GameListEvent, GameListLoadedState> {
   GameListBloc({
     required this.steamID,
   }) : super(const GameListLoadedState(
-            status: GameListStatus.initial, games: GameDataSource.empty)) {
-    on<GetAllGames>(_fetchGames);
-    on<GetRecentGames>(_fetchGames);
+          recentGames: GameDataSource.emptyGame,
+          allGames: GameDataSource.emptyGame,
+          recentGamesEntries: GameDataSource.emptyHLTBEntry,
+          allGamesEntries: GameDataSource.emptyHLTBEntry,
+          recentStatus: GameListStatus.initial,
+          allStatus: GameListStatus.initial,
+        )) {
+    on<GetGames>(_fetchGames);
   }
 
   String steamID;
@@ -23,56 +29,54 @@ class GameListBloc extends Bloc<GameListEvent, GameListLoadedState> {
   void _fetchGames(
       GameListEvent event, Emitter<GameListLoadedState> emit) async {
     try {
-      final bool fetchAllGames = event.IsAllGamesEvent();
-
-      if (fetchAllGames)
-        print('Fetching ALL games');
-      else
-        print('Fetching RECENT games');
-
-      emit(state.copyWith(status: GameListStatus.loading));
-      final gamesResult =
-          await GameDataSource.fetchGames(steamID, fetchAllGames);
+      // Emit Loading Status
+      emit(state.copyWith(
+        recentStatus: GameListStatus.loading,
+        allStatus: GameListStatus.loading,
+      ));
+      // Fetch recent games data from Steam
+      final recentGames = await GameDataSource.fetchGames(steamID, false);
       emit(
         state.copyWith(
-          status: GameListStatus.success,
-          games: gamesResult,
+          recentGames: recentGames,
+          recentStatus: GameListStatus.success,
         ),
       );
+      // Fetch all games data from Steam
+      final allGames = await GameDataSource.fetchGames(steamID, true);
+      emit(
+        state.copyWith(
+          allGames: allGames,
+          allStatus: GameListStatus.success,
+        ),
+      );
+      // Fetch recent games data entries from HLTB
+      final recentGameEntries =
+          await GameDataSource.fetchHLTBEntries(recentGames);
+      emit(
+        state.copyWith(
+          recentGamesEntries: recentGameEntries,
+        ),
+      );
+      // Fetch all games data entries from HLTB (in sets of 10)
+      List<HowLongToBeatEntry> allGameEntries =
+          List<HowLongToBeatEntry>.empty(growable: true);
+      for (int i = 0; i < allGames.length; i += 10) {
+        List<HowLongToBeatEntry> tmpList =
+            await GameDataSource.fetchHLTBEntries(allGames.sublist(i, i + 9));
+        allGameEntries.addAll(tmpList);
+        emit(
+          state.copyWith(
+            allGamesEntries: allGameEntries,
+          ),
+        );
+      }
     } catch (error) {
       print(error.toString());
-      emit(state.copyWith(status: GameListStatus.error));
+      emit(state.copyWith(
+        recentStatus: GameListStatus.error,
+        allStatus: GameListStatus.error,
+      ));
     }
   }
-
-  // void _fetchRecentGames(
-  //     GetRecentGames event, Emitter<GameListLoadedState> emit) {
-  //   _fetchGames(event.steamid, emit, false);
-  // }
-
-  // void _fetchGames(
-  //   String steamID,
-  //   Emitter<GameListLoadedState> emit,
-  //   bool fetchAllGames,
-  // ) async {
-  //   try {
-  //     if (fetchAllGames)
-  //       print('Fetching ALL games');
-  //     else
-  //       print('Fetching RECENT games');
-
-  //     emit(state.copyWith(status: GameListStatus.loading));
-  //     final gamesResult =
-  //         await GameDataSource.fetchGames(steamID, fetchAllGames);
-  //     emit(
-  //       state.copyWith(
-  //         status: GameListStatus.success,
-  //         games: gamesResult,
-  //       ),
-  //     );
-  //   } catch (error) {
-  //     print(error.toString());
-  //     emit(state.copyWith(status: GameListStatus.error));
-  //   }
-  // }
 }

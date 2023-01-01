@@ -1,3 +1,4 @@
+import 'package:steamtimespent/HLTB/howlongtobeat.dart';
 import 'package:steamtimespent/game.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,19 +8,11 @@ class GameDataSource {
 
   static Future<List<Game>> getGames() async => _games;
 
-  static const empty = <Game>[];
+  static const emptyGame = <Game>[];
+  static const emptyHLTBEntry = <HowLongToBeatEntry>[];
 
   static Future<List<Game>> fetchGames(String steamID, bool getAllGames) async {
     String steamAPIkey = '8214D13AC7E97D3848A107CD015F2F3A';
-    // String url;
-
-    // if (getAllGames) {
-    //   url =
-    //       """http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=$steamAPIkey&steamid=$steamID&include_appinfo=true&format=json""";
-    // } else {
-    //   url =
-    //       """http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key=$steamAPIkey&steamid=$steamID&include_appinfo=true&format=json""";
-    // }
 
     Uri uri;
     if (getAllGames) {
@@ -73,6 +66,20 @@ class GameDataSource {
     }
     print('Connection error');
     throw Exception('Internet connection error');
+  }
+
+  static Future<List<HowLongToBeatEntry>> fetchHLTBEntries(
+    List<Game> games,
+  ) async {
+    HowLongToBeatService hltbService = HowLongToBeatService();
+    List<String> gameNames = List.empty(growable: true);
+    for (Game game in games) {
+      gameNames.add(game.name);
+    }
+
+    List<HowLongToBeatEntry> gameEntries = await hltbService.search(gameNames);
+
+    return gameEntries;
   }
 }
 

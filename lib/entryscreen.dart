@@ -71,7 +71,7 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                             SteamUserBloc()..add(LoadSteamUser(user))),
                     BlocProvider(
                       create: (context) => GameListBloc(steamID: user.steamid)
-                        ..add(GetRecentGames(user.steamid)),
+                        ..add(GetGames(user.steamid)),
                     ),
                   ],
                   child: const GameListScreen(),

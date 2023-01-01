@@ -2,7 +2,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:steamtimespent/game.dart';
-import 'package:steamtimespent/gamedatasource.dart';
 import 'package:steamtimespent/gamelistbloc/gamelist_bloc.dart';
 import 'package:steamtimespent/imagerounded.dart';
 import 'package:steamtimespent/user.dart';
@@ -46,6 +45,31 @@ SortOrder NextSortOrder(SortOrder order) {
   return SortOrder.values[nextIndex];
 }
 
+void SortGames(BuildContext context, bool allGames, SortOrder sortOrder) {
+  List<Game> games;
+  if (allGames == true) {
+    games = context.read<GameListBloc>().state.allGames;
+  } else {
+    games = context.read<GameListBloc>().state.recentGames;
+  }
+
+  //sortOrder = NextSortOrder(sortOrder);
+  switch (sortOrder) {
+    case SortOrder.Alphabethical:
+      games.sort(((a, b) => a.name.compareTo(b.name)));
+      break;
+    case SortOrder.ReverseAlphabethical:
+      games.sort(((a, b) => b.name.compareTo(a.name)));
+      break;
+    // case SortOrder.MostCompleted:
+    //   // TODO: Handle this case.
+    //   break;
+    // case SortOrder.LeastCompleted:
+    //   // TODO: Handle this case.
+    //   break;
+  }
+}
+
 class _StateShowGames extends State<GameListScreen> {
   //CategoryToDisplay currentCategory = CategoryToDisplay.AllGames;
   bool displayAllGames = false;
@@ -75,12 +99,7 @@ class _StateShowGames extends State<GameListScreen> {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    setState(() {
-                                      displayAllGames = false;
-                                      context
-                                          .read<GameListBloc>()
-                                          .add(GetRecentGames(steamID));
-                                    });
+                                    setState(() => displayAllGames = false);
                                   },
                                   child: CategoryButton(
                                       textToDisplay: 'Recent Games',
@@ -88,12 +107,7 @@ class _StateShowGames extends State<GameListScreen> {
                                 ),
                                 GestureDetector(
                                   onTap: () {
-                                    setState(() {
-                                      displayAllGames = true;
-                                      context
-                                          .read<GameListBloc>()
-                                          .add(GetAllGames(steamID));
-                                    });
+                                    setState(() => displayAllGames = true);
                                   },
                                   child: CategoryButton(
                                       textToDisplay: 'All Games',
@@ -103,27 +117,9 @@ class _StateShowGames extends State<GameListScreen> {
                                 GestureDetector(
                                   onTap: () {
                                     setState(() {
-                                      List<Game> games = context
-                                          .read<GameListBloc>()
-                                          .state
-                                          .games;
                                       sortOrder = NextSortOrder(sortOrder);
-                                      switch (sortOrder) {
-                                        case SortOrder.Alphabethical:
-                                          games.sort(((a, b) =>
-                                              a.name.compareTo(b.name)));
-                                          break;
-                                        case SortOrder.ReverseAlphabethical:
-                                          games.sort(((a, b) =>
-                                              b.name.compareTo(a.name)));
-                                          break;
-                                        // case SortOrder.MostCompleted:
-                                        //   // TODO: Handle this case.
-                                        //   break;
-                                        // case SortOrder.LeastCompleted:
-                                        //   // TODO: Handle this case.
-                                        //   break;
-                                      }
+                                      SortGames(
+                                          context, displayAllGames, sortOrder);
                                     });
                                   },
                                   child: SortOrderButton(
@@ -132,7 +128,9 @@ class _StateShowGames extends State<GameListScreen> {
                                 ),
                               ],
                             ),
-                            GamesListWidget(),
+                            GamesListWidget(
+                              displayAllGames: displayAllGames,
+                            ),
                           ]),
                     )))));
   }
@@ -206,15 +204,51 @@ class SortOrderButton extends StatelessWidget {
 }
 
 class GamesListWidget extends StatelessWidget {
-  const GamesListWidget({super.key});
+  const GamesListWidget({
+    super.key,
+    required this.displayAllGames,
+  });
+
+  final bool displayAllGames;
+
+  @override
+  Widget build(BuildContext context) {
+    return (displayAllGames)
+        ? const AllGamesSuccessWidget()
+        : const RecentGamesSuccessWidget();
+  }
+}
+
+class RecentGamesSuccessWidget extends StatelessWidget {
+  const RecentGamesSuccessWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GameListBloc, GameListLoadedState>(
         builder: (context, state) {
-      return state.status.isSuccess
-          ? GamesSuccessWidget(games: state.games)
-          : state.status.isLoading
+      return state.recentStatus.isSuccess
+          ? GamesSuccessWidget(games: state.recentGames)
+          : state.recentStatus.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : const Center(
+                  child: Text('load error'),
+                );
+    });
+  }
+}
+
+class AllGamesSuccessWidget extends StatelessWidget {
+  const AllGamesSuccessWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<GameListBloc, GameListLoadedState>(
+        builder: (context, state) {
+      return state.allStatus.isSuccess
+          ? GamesSuccessWidget(games: state.allGames)
+          : state.allStatus.isLoading
               ? const Center(
                   child: CircularProgressIndicator(),
                 )

@@ -5,31 +5,12 @@ abstract class GameListEvent extends Equatable {
 
   final String steamid;
 
-  bool IsAllGamesEvent();
-
   @override
   List<Object> get props => [steamid];
 }
 
-class GetAllGames extends GameListEvent {
-  const GetAllGames(String steamid) : super(steamid);
-
-  @override
-  bool IsAllGamesEvent() {
-    return true;
-  }
-
-  @override
-  List<Object> get props => [steamid];
-}
-
-class GetRecentGames extends GameListEvent {
-  const GetRecentGames(String steamid) : super(steamid);
-
-  @override
-  bool IsAllGamesEvent() {
-    return false;
-  }
+class GetGames extends GameListEvent {
+  const GetGames(String steamid) : super(steamid);
 
   @override
   List<Object> get props => [steamid];
