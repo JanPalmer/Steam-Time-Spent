@@ -12,10 +12,7 @@ void main() {
       home: BlocProvider(
           create: (context) => SteamUserBloc(),
           child: ConstrainedBox(
-              constraints:
-                  BoxConstraints.loose(const Size(300, double.infinity)),
-              child: Center(
-                widthFactor: 0.5,
-                child: SteamIDEntryScreen(),
-              )))));
+            constraints: BoxConstraints.loose(const Size(300, double.infinity)),
+            child: SteamIDEntryScreen(),
+          ))));
 }

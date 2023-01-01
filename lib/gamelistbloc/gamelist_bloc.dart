@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:steamtimespent/HLTB/howlongtobeat.dart';
@@ -39,7 +41,6 @@ class GameListBloc extends Bloc<GameListEvent, GameListLoadedState> {
       emit(
         state.copyWith(
           recentGames: recentGames,
-          recentStatus: GameListStatus.success,
         ),
       );
       // Fetch all games data from Steam
@@ -47,7 +48,6 @@ class GameListBloc extends Bloc<GameListEvent, GameListLoadedState> {
       emit(
         state.copyWith(
           allGames: allGames,
-          allStatus: GameListStatus.success,
         ),
       );
       // Fetch recent games data entries from HLTB
@@ -56,18 +56,20 @@ class GameListBloc extends Bloc<GameListEvent, GameListLoadedState> {
       emit(
         state.copyWith(
           recentGamesEntries: recentGameEntries,
+          recentStatus: GameListStatus.success,
         ),
       );
       // Fetch all games data entries from HLTB (in sets of 10)
-      List<HowLongToBeatEntry> allGameEntries =
-          List<HowLongToBeatEntry>.empty(growable: true);
+      Map<String, HowLongToBeatEntry> allGameEntries = {};
       for (int i = 0; i < allGames.length; i += 10) {
-        List<HowLongToBeatEntry> tmpList =
-            await GameDataSource.fetchHLTBEntries(allGames.sublist(i, i + 9));
+        Map<String, HowLongToBeatEntry> tmpList =
+            await GameDataSource.fetchHLTBEntries(
+                allGames.sublist(i, min(i + 9, allGames.length)));
         allGameEntries.addAll(tmpList);
         emit(
           state.copyWith(
             allGamesEntries: allGameEntries,
+            allStatus: GameListStatus.success,
           ),
         );
       }

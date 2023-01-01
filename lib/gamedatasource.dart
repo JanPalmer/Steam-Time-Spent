@@ -9,7 +9,7 @@ class GameDataSource {
   static Future<List<Game>> getGames() async => _games;
 
   static const emptyGame = <Game>[];
-  static const emptyHLTBEntry = <HowLongToBeatEntry>[];
+  static const emptyHLTBEntry = <String, HowLongToBeatEntry>{};
 
   static Future<List<Game>> fetchGames(String steamID, bool getAllGames) async {
     String steamAPIkey = '8214D13AC7E97D3848A107CD015F2F3A';
@@ -68,7 +68,7 @@ class GameDataSource {
     throw Exception('Internet connection error');
   }
 
-  static Future<List<HowLongToBeatEntry>> fetchHLTBEntries(
+  static Future<Map<String, HowLongToBeatEntry>> fetchHLTBEntries(
     List<Game> games,
   ) async {
     HowLongToBeatService hltbService = HowLongToBeatService();
@@ -77,7 +77,8 @@ class GameDataSource {
       gameNames.add(game.name);
     }
 
-    List<HowLongToBeatEntry> gameEntries = await hltbService.search(gameNames);
+    Map<String, HowLongToBeatEntry> gameEntries =
+        await hltbService.search(gameNames);
 
     return gameEntries;
   }

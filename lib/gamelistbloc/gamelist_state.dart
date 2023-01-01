@@ -26,8 +26,8 @@ class GameListLoadedState extends Equatable {
 
   final List<Game> recentGames;
   final List<Game> allGames;
-  final List<HowLongToBeatEntry> recentGamesEntries;
-  final List<HowLongToBeatEntry> allGamesEntries;
+  final Map<String, HowLongToBeatEntry> recentGamesEntries;
+  final Map<String, HowLongToBeatEntry> allGamesEntries;
   final GameListStatus recentStatus;
   final GameListStatus allStatus;
 
@@ -37,8 +37,8 @@ class GameListLoadedState extends Equatable {
   GameListLoadedState copyWith({
     List<Game>? recentGames,
     List<Game>? allGames,
-    final List<HowLongToBeatEntry>? recentGamesEntries,
-    final List<HowLongToBeatEntry>? allGamesEntries,
+    final Map<String, HowLongToBeatEntry>? recentGamesEntries,
+    final Map<String, HowLongToBeatEntry>? allGamesEntries,
     GameListStatus? recentStatus,
     GameListStatus? allStatus,
   }) {

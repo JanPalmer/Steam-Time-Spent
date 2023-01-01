@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:steamtimespent/HLTB/howlongtobeat.dart';
 import 'package:steamtimespent/game.dart';
 import 'package:steamtimespent/gamelistbloc/gamelist_bloc.dart';
 import 'package:steamtimespent/imagerounded.dart';
@@ -128,8 +129,10 @@ class _StateShowGames extends State<GameListScreen> {
                                 ),
                               ],
                             ),
-                            GamesListWidget(
-                              displayAllGames: displayAllGames,
+                            Expanded(
+                              child: GamesListWidget(
+                                displayAllGames: displayAllGames,
+                              ),
                             ),
                           ]),
                     )))));
@@ -227,7 +230,10 @@ class RecentGamesSuccessWidget extends StatelessWidget {
     return BlocBuilder<GameListBloc, GameListLoadedState>(
         builder: (context, state) {
       return state.recentStatus.isSuccess
-          ? GamesSuccessWidget(games: state.recentGames)
+          ? GamesSuccessWidget(
+              games: state.recentGames,
+              gameEntries: state.recentGamesEntries,
+            )
           : state.recentStatus.isLoading
               ? const Center(
                   child: CircularProgressIndicator(),
@@ -247,7 +253,10 @@ class AllGamesSuccessWidget extends StatelessWidget {
     return BlocBuilder<GameListBloc, GameListLoadedState>(
         builder: (context, state) {
       return state.allStatus.isSuccess
-          ? GamesSuccessWidget(games: state.allGames)
+          ? GamesSuccessWidget(
+              games: state.allGames,
+              gameEntries: state.allGamesEntries,
+            )
           : state.allStatus.isLoading
               ? const Center(
                   child: CircularProgressIndicator(),
@@ -293,69 +302,121 @@ class HeaderTitle extends StatelessWidget {
 }
 
 class GamesSuccessWidget extends StatelessWidget {
-  const GamesSuccessWidget({super.key, required this.games});
+  const GamesSuccessWidget({
+    super.key,
+    required this.games,
+    required this.gameEntries,
+  });
 
   final List<Game> games;
+  final Map<String, HowLongToBeatEntry> gameEntries;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Container(
-          height: MediaQuery.of(context).size.height - 56.0 - 60.0,
-          child: ListView.separated(
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(
-                left: 24.0,
-                right: 24.0,
-                top: 24.0,
-              ),
-              itemBuilder: (context, index) {
-                final item = games[index];
-                return ListTile(
-                    title: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                            color: Colors.white10,
-                            child: Padding(
-                                padding: EdgeInsets.all(10),
-                                child: Row(children: [
-                                  (item.img_icon_url != '')
-                                      ? ImageRounded(
-                                          imageurl: item.GetIconURL())
-                                      : Text('💀'),
-                                  Spacer(),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      AutoSizeText(
-                                        item.name,
-                                        style: TextStyle(color: Colors.white),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.fade,
-                                      ),
-                                      Text(
-                                        'Time spent: ' +
-                                            (item.playtime_forever / 60.0)
-                                                .toString(),
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                  Spacer(
-                                    flex: 4,
-                                  ),
-                                ])))),
-                    onTap: () {});
-              },
-              separatorBuilder: (_, __) => const SizedBox(
-                    height: 20.0,
-                  ),
-              itemCount: games.length),
-        )
-      ],
-    );
+    return ListView.separated(
+        scrollDirection: Axis.vertical,
+        physics: AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(
+          left: 24.0,
+          right: 24.0,
+          top: 24.0,
+        ),
+        itemBuilder: (context, index) {
+          final item = games[index];
+          return ListTile(
+              title: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                      color: Colors.white10,
+                      child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Row(children: [
+                            (item.img_icon_url != '')
+                                ? ImageRounded(imageurl: item.GetIconURL())
+                                : Text('💀'),
+                            Flexible(
+                                child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 5.0,
+                                      right: 5.0,
+                                    ),
+                                    child: GameStatsSnippet(
+                                        game: item, gameEntries: gameEntries))),
+                          ])))),
+              onTap: () {});
+        },
+        separatorBuilder: (_, __) => const SizedBox(
+              height: 20.0,
+            ),
+        itemCount: games.length);
+  }
+}
+
+class GameStatsSnippet extends StatelessWidget {
+  const GameStatsSnippet({
+    super.key,
+    required this.game,
+    required this.gameEntries,
+  });
+
+  final Game game;
+  final Map<String, HowLongToBeatEntry> gameEntries;
+
+  @override
+  Widget build(BuildContext context) {
+    if (gameEntries[game.name] != null) {
+      return Column(
+        children: <Widget>[
+          Text(
+            game.name,
+            style: TextStyle(color: Colors.white, fontSize: 12),
+          ),
+          Text(
+            'Time spent: ' + (game.playtime_forever / 60.0).toStringAsFixed(2),
+            style: TextStyle(color: Colors.white, fontSize: 12),
+          ),
+          Text(
+            'Average Completion (All playstyles): ${gameEntries[game.name]?.gameplayAllPlaystyles.toStringAsFixed(2) ?? double.infinity}',
+            style: TextStyle(color: Colors.white, fontSize: 12),
+          ),
+          LinearProgressIndicator(
+            color: Colors.blueGrey,
+            value: game.playtime_forever /
+                (gameEntries[game.name]?.gameplayAllPlaystyles ?? 10000.0),
+          ),
+          Text(
+            'Main Story Completion:',
+            style: TextStyle(color: Colors.white, fontSize: 12),
+          ),
+          LinearProgressIndicator(
+            color: Colors.blueGrey,
+            value: game.playtime_forever /
+                (gameEntries[game.name]?.gameplayMain ?? 10000.0),
+          ),
+          Text(
+            'Main+Sides Completion:',
+            style: TextStyle(color: Colors.white, fontSize: 12),
+          ),
+          LinearProgressIndicator(
+            value: game.playtime_forever /
+                (gameEntries[game.name]?.gameplayMainExtra ?? 10000.0),
+          ),
+          // Text('100% Completion:'),
+          // LinearProgressIndicator(
+          //   value: game.playtime_forever /
+          //       (gameEntries[game.name]?.gameplayCompletionist ?? 10000.0),
+          // ),
+        ],
+      );
+    } else {
+      return Column(children: <Widget>[
+        Text(
+          game.name,
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        ),
+        Text('Game not found on HowLongToBeat.com',
+            style: TextStyle(color: Colors.white, fontSize: 12)),
+      ]);
+    }
   }
 }
