@@ -1,7 +1,5 @@
-import 'dart:ui';
-
 class Game {
-  const Game({
+  Game({
     required this.appid,
     required this.name,
     required this.playtime_forever,
@@ -9,14 +7,14 @@ class Game {
   });
 
   final int appid;
-  final String name;
+  String name;
   final int playtime_forever;
   final String img_icon_url;
 
-  static String gameIconURLPrefix =
+  static const String gameIconURLPrefix =
       'http://media.steampowered.com/steamcommunity/public/images/apps/';
 
-  static const empty =
+  static final empty =
       Game(appid: 0, name: '', playtime_forever: 0, img_icon_url: '');
 
   Game.fromJson(Map<String, dynamic> json)

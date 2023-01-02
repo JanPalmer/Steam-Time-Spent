@@ -36,10 +36,8 @@ class HltbSearch {
   Future<dynamic> search(List<String> query) async {
     final search = payload;
     search.update('searchTerms', (value) => query);
-    //print(search);
 
     Uri url = Uri.https('howlongtobeat.com', '/api/search');
-    //print(url.toString());
     final msg = jsonEncode(payload);
     var response = await http.post(url, headers: headers, body: msg);
 

@@ -8,20 +8,6 @@ import 'package:steamtimespent/imagerounded.dart';
 import 'package:steamtimespent/user.dart';
 import 'package:steamtimespent/userbloc/user_bloc.dart';
 
-// class UserStatsView extends StatelessWidget{
-//   const UserStatsView({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('User stats')),
-//       body: BlocProvider(
-//         create: (_) => UserBloc(),
-//       )
-//     )
-//   }
-// }
-
 class GameListScreen extends StatefulWidget {
   const GameListScreen({super.key});
 
@@ -37,8 +23,8 @@ enum CategoryToDisplay {
 enum SortOrder {
   Alphabethical,
   ReverseAlphabethical,
-  //MostCompleted,
-  //LeastCompleted,
+  MostCompleted,
+  LeastCompleted,
 }
 
 SortOrder NextSortOrder(SortOrder order) {
@@ -62,12 +48,12 @@ void SortGames(BuildContext context, bool allGames, SortOrder sortOrder) {
     case SortOrder.ReverseAlphabethical:
       games.sort(((a, b) => b.name.compareTo(a.name)));
       break;
-    // case SortOrder.MostCompleted:
-    //   // TODO: Handle this case.
-    //   break;
-    // case SortOrder.LeastCompleted:
-    //   // TODO: Handle this case.
-    //   break;
+    case SortOrder.MostCompleted:
+      games.sort(((a, b) => a.playtime_forever.compareTo(b.playtime_forever)));
+      break;
+    case SortOrder.LeastCompleted:
+      games.sort(((a, b) => b.playtime_forever.compareTo(a.playtime_forever)));
+      break;
   }
 }
 
@@ -181,11 +167,11 @@ class SortOrderButton extends StatelessWidget {
       case SortOrder.Alphabethical:
         return "assets/sort_alphabeth.png";
       case SortOrder.ReverseAlphabethical:
-        return "assets/sort_alphabeth_reverseorder.jpg";
-      // case SortOrder.MostCompleted:
-      //   return "";
-      // case SortOrder.LeastCompleted:
-      //   return "";
+        return "assets/sort_alphabeth_reverseorder.png";
+      case SortOrder.MostCompleted:
+        return "assets/sort_completion_min2max.png";
+      case SortOrder.LeastCompleted:
+        return "assets/sort_completion_max2min.png";
     }
   }
 
@@ -232,7 +218,7 @@ class RecentGamesSuccessWidget extends StatelessWidget {
       return state.recentStatus.isSuccess
           ? GamesSuccessWidget(
               games: state.recentGames,
-              gameEntries: state.recentGamesEntries,
+              gameEntries: state.gameEntries,
             )
           : state.recentStatus.isLoading
               ? const Center(
@@ -255,7 +241,7 @@ class AllGamesSuccessWidget extends StatelessWidget {
       return state.allStatus.isSuccess
           ? GamesSuccessWidget(
               games: state.allGames,
-              gameEntries: state.allGamesEntries,
+              gameEntries: state.gameEntries,
             )
           : state.allStatus.isLoading
               ? const Center(
@@ -315,10 +301,8 @@ class GamesSuccessWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
         scrollDirection: Axis.vertical,
-        physics: AlwaysScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(
-          left: 24.0,
-          right: 24.0,
           top: 24.0,
         ),
         itemBuilder: (context, index) {
@@ -330,19 +314,26 @@ class GamesSuccessWidget extends StatelessWidget {
                       color: Colors.white10,
                       child: Padding(
                           padding: EdgeInsets.all(10),
-                          child: Row(children: [
-                            (item.img_icon_url != '')
-                                ? ImageRounded(imageurl: item.GetIconURL())
-                                : Text('💀'),
-                            Flexible(
-                                child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 5.0,
-                                      right: 5.0,
-                                    ),
-                                    child: GameStatsSnippet(
-                                        game: item, gameEntries: gameEntries))),
-                          ])))),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              (item.img_icon_url != '')
+                                  ? ImageRounded(imageurl: item.GetIconURL())
+                                  : Text('💀'),
+                              Flexible(
+                                  child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 5.0,
+                                        right: 5.0,
+                                      ),
+                                      child: Center(
+                                          child: GameStatsSnippet(
+                                        game: item,
+                                        gameEntry: gameEntries[item.name] ??
+                                            HowLongToBeatEntry(),
+                                      )))),
+                            ],
+                          )))),
               onTap: () {});
         },
         separatorBuilder: (_, __) => const SizedBox(
@@ -356,67 +347,110 @@ class GameStatsSnippet extends StatelessWidget {
   const GameStatsSnippet({
     super.key,
     required this.game,
-    required this.gameEntries,
+    required this.gameEntry,
   });
 
   final Game game;
-  final Map<String, HowLongToBeatEntry> gameEntries;
+  final HowLongToBeatEntry gameEntry;
 
   @override
   Widget build(BuildContext context) {
-    if (gameEntries[game.name] != null) {
-      return Column(
-        children: <Widget>[
-          Text(
+    //print(gameEntry.status);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.only(bottom: 5.0),
+          child: Text(
             game.name,
-            style: TextStyle(color: Colors.white, fontSize: 12),
+            style: TextStyle(color: Colors.white, fontSize: 14),
           ),
-          Text(
-            'Time spent: ' + (game.playtime_forever / 60.0).toStringAsFixed(2),
-            style: TextStyle(color: Colors.white, fontSize: 12),
-          ),
-          Text(
-            'Average Completion (All playstyles): ${gameEntries[game.name]?.gameplayAllPlaystyles.toStringAsFixed(2) ?? double.infinity}',
-            style: TextStyle(color: Colors.white, fontSize: 12),
-          ),
-          LinearProgressIndicator(
-            color: Colors.blueGrey,
-            value: game.playtime_forever /
-                (gameEntries[game.name]?.gameplayAllPlaystyles ?? 10000.0),
-          ),
-          Text(
-            'Main Story Completion:',
-            style: TextStyle(color: Colors.white, fontSize: 12),
-          ),
-          LinearProgressIndicator(
-            color: Colors.blueGrey,
-            value: game.playtime_forever /
-                (gameEntries[game.name]?.gameplayMain ?? 10000.0),
-          ),
-          Text(
-            'Main+Sides Completion:',
-            style: TextStyle(color: Colors.white, fontSize: 12),
-          ),
-          LinearProgressIndicator(
-            value: game.playtime_forever /
-                (gameEntries[game.name]?.gameplayMainExtra ?? 10000.0),
-          ),
-          // Text('100% Completion:'),
-          // LinearProgressIndicator(
-          //   value: game.playtime_forever /
-          //       (gameEntries[game.name]?.gameplayCompletionist ?? 10000.0),
-          // ),
-        ],
-      );
-    } else {
-      return Column(children: <Widget>[
+        ),
         Text(
-          game.name,
+          'Time spent: ' + (game.playtime_forever / 60.0).toStringAsFixed(2),
           style: TextStyle(color: Colors.white, fontSize: 12),
         ),
-        Text('Game not found on HowLongToBeat.com',
-            style: TextStyle(color: Colors.white, fontSize: 12)),
-      ]);
-    }
+        (gameEntry.status.isSuccess)
+            ? Flexible(
+                child: GameCompletionIndicatorsSuccess(
+                    hltbEntry: gameEntry, game: game),
+              )
+            : (gameEntry.status.isLoading)
+                ? const CircularProgressIndicator()
+                : const Text(
+                    'Game not found on HowLongToBeat.com',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+      ],
+    );
+  }
+}
+
+class GameCompletionIndicatorsSuccess extends StatelessWidget {
+  const GameCompletionIndicatorsSuccess({
+    super.key,
+    required this.hltbEntry,
+    required this.game,
+  });
+
+  final HowLongToBeatEntry hltbEntry;
+  final Game game;
+
+  @override
+  Widget build(BuildContext context) {
+    double cmplAllPlaystyles = (hltbEntry.gameplayAllPlaystyles <= 0)
+        ? 0
+        : game.playtime_forever / hltbEntry.gameplayAllPlaystyles;
+    double cmplMain = (hltbEntry.gameplayMain <= 0)
+        ? 0
+        : game.playtime_forever / hltbEntry.gameplayMain;
+    double cmplMainExtra = (hltbEntry.gameplayMainExtra <= 0)
+        ? 0
+        : game.playtime_forever / hltbEntry.gameplayMainExtra;
+    double cmpl100 = (hltbEntry.gameplayCompletionist <= 0)
+        ? 0
+        : game.playtime_forever / hltbEntry.gameplayCompletionist;
+
+    if (cmplMain.isNaN ||
+        cmplMainExtra.isNaN ||
+        cmpl100.isNaN ||
+        cmplAllPlaystyles.isNaN) throw ('isNan');
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Average Completion (All playstyles): ${(hltbEntry.gameplayAllPlaystyles / 60).toStringAsFixed(2)}',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        ),
+        LinearProgressIndicator(
+          color: Colors.blueGrey,
+          value: cmplAllPlaystyles,
+        ),
+        Text(
+          'Main Story Completion: ${(hltbEntry.gameplayMain / 60).toStringAsFixed(2)}',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        ),
+        LinearProgressIndicator(
+          color: Colors.blueGrey,
+          value: cmplMain,
+        ),
+        Text(
+          'Main+Sides Completion: ${(hltbEntry.gameplayMainExtra / 60).toStringAsFixed(2)}',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        ),
+        LinearProgressIndicator(
+          value: cmplMainExtra,
+        ),
+        Text(
+          '100% Completion: ${(hltbEntry.gameplayCompletionist / 60).toStringAsFixed(2)}',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        ),
+        LinearProgressIndicator(
+          value: cmpl100,
+        ),
+      ],
+    );
   }
 }

@@ -70,6 +70,7 @@ class GameDataSource {
 
   static Future<Map<String, HowLongToBeatEntry>> fetchHLTBEntries(
     List<Game> games,
+    Map<String, HowLongToBeatEntry> currentGameEntries,
   ) async {
     HowLongToBeatService hltbService = HowLongToBeatService();
     List<String> gameNames = List.empty(growable: true);
@@ -85,16 +86,15 @@ class GameDataSource {
 }
 
 final _games = [
-  const Game(
+  Game(
       appid: 1,
       name: 'Yakuza Like a Dragon',
       playtime_forever: 0,
       img_icon_url: 'kk'),
-  const Game(
+  Game(
       appid: 2,
       name: 'Ace Combat 7: Skies Unknown',
       playtime_forever: 99,
       img_icon_url: 'kk'),
-  const Game(
-      appid: 3, name: 'Elden Ring', playtime_forever: 33, img_icon_url: 'kk'),
+  Game(appid: 3, name: 'Elden Ring', playtime_forever: 33, img_icon_url: 'kk'),
 ];
