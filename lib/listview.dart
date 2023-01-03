@@ -73,7 +73,7 @@ class _StateShowGames extends State<GameListScreen> {
             child: Center(
                 child: ConstrainedBox(
                     constraints:
-                        BoxConstraints.loose(const Size(500, double.infinity)),
+                        BoxConstraints.loose(const Size(600, double.infinity)),
                     child: Padding(
                       padding: const EdgeInsets.only(
                         top: 5.0,
@@ -100,7 +100,7 @@ class _StateShowGames extends State<GameListScreen> {
                                       textToDisplay: 'All Games',
                                       isSelected: displayAllGames),
                                 ),
-                                Spacer(),
+                                const Spacer(),
                                 GestureDetector(
                                   onTap: () {
                                     setState(() {
@@ -267,13 +267,13 @@ class HeaderTitle extends StatelessWidget {
             child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Spacer(),
+            const Spacer(),
             ImageRounded(
               imageurl: steamuser.avatarurl,
             ),
             //Spacer(),
             Text(' ' + steamuser.personaname),
-            Spacer(),
+            const Spacer(),
           ],
         ));
       } else {
@@ -313,13 +313,13 @@ class GamesSuccessWidget extends StatelessWidget {
                   child: Container(
                       color: Colors.white10,
                       child: Padding(
-                          padding: EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(10),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               (item.img_icon_url != '')
                                   ? ImageRounded(imageurl: item.GetIconURL())
-                                  : Text('💀'),
+                                  : const Text('💀'),
                               Flexible(
                                   child: Padding(
                                       padding: const EdgeInsets.only(
@@ -361,15 +361,15 @@ class GameStatsSnippet extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(bottom: 5.0),
+          padding: const EdgeInsets.only(bottom: 5.0),
           child: Text(
             game.name,
-            style: TextStyle(color: Colors.white, fontSize: 14),
+            style: const TextStyle(color: Colors.white, fontSize: 14),
           ),
         ),
         Text(
-          'Time spent: ' + (game.playtime_forever / 60.0).toStringAsFixed(2),
-          style: TextStyle(color: Colors.white, fontSize: 12),
+          'Time spent:  + ${(game.playtime_forever / 60.0).toStringAsFixed(2)}',
+          style: const TextStyle(color: Colors.white, fontSize: 12),
         ),
         (gameEntry.status.isSuccess)
             ? Flexible(
@@ -422,7 +422,7 @@ class GameCompletionIndicatorsSuccess extends StatelessWidget {
       children: [
         Text(
           'Average Completion (All playstyles): ${(hltbEntry.gameplayAllPlaystyles / 60).toStringAsFixed(2)}',
-          style: TextStyle(color: Colors.white, fontSize: 12),
+          style: const TextStyle(color: Colors.white, fontSize: 12),
         ),
         LinearProgressIndicator(
           color: Colors.blueGrey,
@@ -430,7 +430,7 @@ class GameCompletionIndicatorsSuccess extends StatelessWidget {
         ),
         Text(
           'Main Story Completion: ${(hltbEntry.gameplayMain / 60).toStringAsFixed(2)}',
-          style: TextStyle(color: Colors.white, fontSize: 12),
+          style: const TextStyle(color: Colors.white, fontSize: 12),
         ),
         LinearProgressIndicator(
           color: Colors.blueGrey,
@@ -438,14 +438,14 @@ class GameCompletionIndicatorsSuccess extends StatelessWidget {
         ),
         Text(
           'Main+Sides Completion: ${(hltbEntry.gameplayMainExtra / 60).toStringAsFixed(2)}',
-          style: TextStyle(color: Colors.white, fontSize: 12),
+          style: const TextStyle(color: Colors.white, fontSize: 12),
         ),
         LinearProgressIndicator(
           value: cmplMainExtra,
         ),
         Text(
           '100% Completion: ${(hltbEntry.gameplayCompletionist / 60).toStringAsFixed(2)}',
-          style: TextStyle(color: Colors.white, fontSize: 12),
+          style: const TextStyle(color: Colors.white, fontSize: 12),
         ),
         LinearProgressIndicator(
           value: cmpl100,

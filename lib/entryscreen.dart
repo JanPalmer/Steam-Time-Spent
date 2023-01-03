@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:steamtimespent/game.dart';
 import 'package:steamtimespent/gamedatasource.dart';
 import 'package:steamtimespent/gamelistbloc/gamelist_bloc.dart';
+import 'package:steamtimespent/helpscreen.dart';
 import 'package:steamtimespent/listview.dart';
 import 'package:steamtimespent/user.dart';
 import 'package:steamtimespent/userbloc/user_bloc.dart';
@@ -87,7 +88,7 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
             child: Center(
               child: ConstrainedBox(
                 constraints:
-                    BoxConstraints.loose(const Size(500, double.infinity)),
+                    BoxConstraints.loose(const Size(600, double.infinity)),
                 child: Column(
                   children: <Widget>[
                     Container(
@@ -100,6 +101,7 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                             color: Colors.white,
                           ),
                         )),
+                    SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.all(10),
                       child: TextField(
@@ -116,6 +118,7 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
+                    SizedBox(height: 10),
                     if (currstate == InputScreenState.loading)
                       const Expanded(
                           child: Center(child: CircularProgressIndicator()))
@@ -133,13 +136,28 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                               _loadSteamProfile();
                             },
                           )),
+                    SizedBox(height: 10),
                     TextButton(
                       onPressed: () {
-                        //forgot password screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => HelpScreen()),
+                        );
                       },
                       child: const Text(
                         'How to find your SteamID64',
+                        style: const TextStyle(
+                            color: Colors.blueGrey,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.justify,
                       ),
+                    ),
+                    const Text(
+                      'Data loading might take more than a minute, please be patient',
+                      style:
+                          const TextStyle(color: Colors.blueGrey, fontSize: 14),
+                      textAlign: TextAlign.justify,
                     ),
                   ],
                 ),
