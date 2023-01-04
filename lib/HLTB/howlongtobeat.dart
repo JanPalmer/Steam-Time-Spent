@@ -1,5 +1,4 @@
 import 'hltbsearch.dart';
-import 'package:string_similarity/string_similarity.dart';
 import 'dart:convert';
 
 class HowLongToBeatService {
@@ -10,24 +9,16 @@ class HowLongToBeatService {
 
     for (int i = 0; i < games.length; i++) {
       String currGame = games[i];
-      //print('Searching for: $currGame');
       List<String> searchTerms = currGame.split(' ');
       String search = await hltb.search(searchTerms);
       try {
         gameEntries.add(parseBody(currGame, search));
       } catch (error) {
-        print(error);
-        // games.remove(currGame);
-        // i--;
         gameEntries.add(HowLongToBeatEntry.empty);
       }
     }
 
     if (games.length != gameEntries.length) {
-      print(games);
-      for (HowLongToBeatEntry hltb in gameEntries) {
-        print(hltb.name);
-      }
       throw ("Iterables not same length");
     }
 
@@ -51,12 +42,6 @@ class HowLongToBeatService {
       searchTerm: gameName,
       status: HowLongToBeatEntryStatus.success,
     );
-
-    // print(hltbEntry.name);
-    // print(hltbEntry.gameplayMain);
-    // print(hltbEntry.gameplayMainExtra);
-    // print(hltbEntry.gameplayCompletionist);
-    // print(hltbEntry.gameplayAllPlaystyles);
 
     return hltbEntry;
   }

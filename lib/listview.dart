@@ -1,4 +1,5 @@
-import 'package:auto_size_text/auto_size_text.dart';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:steamtimespent/HLTB/howlongtobeat.dart';
@@ -40,6 +41,8 @@ void SortGames(BuildContext context, bool allGames, SortOrder sortOrder) {
     games = context.read<GameListBloc>().state.recentGames;
   }
 
+  if (games.isEmpty) return;
+
   //sortOrder = NextSortOrder(sortOrder);
   switch (sortOrder) {
     case SortOrder.Alphabethical:
@@ -49,10 +52,10 @@ void SortGames(BuildContext context, bool allGames, SortOrder sortOrder) {
       games.sort(((a, b) => b.name.compareTo(a.name)));
       break;
     case SortOrder.MostCompleted:
-      games.sort(((a, b) => a.playtime_forever.compareTo(b.playtime_forever)));
+      games.sort(((a, b) => b.playtime_forever.compareTo(a.playtime_forever)));
       break;
     case SortOrder.LeastCompleted:
-      games.sort(((a, b) => b.playtime_forever.compareTo(a.playtime_forever)));
+      games.sort(((a, b) => a.playtime_forever.compareTo(b.playtime_forever)));
       break;
   }
 }
@@ -82,38 +85,42 @@ class _StateShowGames extends State<GameListScreen> {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() => displayAllGames = false);
-                                  },
-                                  child: CategoryButton(
-                                      textToDisplay: 'Recent Games',
-                                      isSelected: !displayAllGames),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() => displayAllGames = true);
-                                  },
-                                  child: CategoryButton(
-                                      textToDisplay: 'All Games',
-                                      isSelected: displayAllGames),
-                                ),
-                                const Spacer(),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      sortOrder = NextSortOrder(sortOrder);
-                                      SortGames(
-                                          context, displayAllGames, sortOrder);
-                                    });
-                                  },
-                                  child: SortOrderButton(
-                                    currentSortOrder: sortOrder,
+                            Padding(
+                              padding: EdgeInsets.all(5),
+                              child: Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() => displayAllGames = false);
+                                    },
+                                    child: CategoryButton(
+                                        textToDisplay: 'Recent Games',
+                                        isSelected: !displayAllGames),
                                   ),
-                                ),
-                              ],
+                                  SizedBox(width: 5),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() => displayAllGames = true);
+                                    },
+                                    child: CategoryButton(
+                                        textToDisplay: 'All Games',
+                                        isSelected: displayAllGames),
+                                  ),
+                                  const Spacer(),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        sortOrder = NextSortOrder(sortOrder);
+                                        SortGames(context, displayAllGames,
+                                            sortOrder);
+                                      });
+                                    },
+                                    child: SortOrderButton(
+                                      currentSortOrder: sortOrder,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             Expanded(
                               child: GamesListWidget(
@@ -141,14 +148,14 @@ class CategoryButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: AnimatedContainer(
             duration: const Duration(milliseconds: 500),
-            width: 100,
+            width: 120,
             height: 50,
             color: isSelected ? Colors.white38 : Colors.white10,
             curve: Curves.easeIn,
             child: Center(
               child: Text(
                 textToDisplay,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
             )));
   }
@@ -169,9 +176,9 @@ class SortOrderButton extends StatelessWidget {
       case SortOrder.ReverseAlphabethical:
         return "assets/sort_alphabeth_reverseorder.png";
       case SortOrder.MostCompleted:
-        return "assets/sort_completion_min2max.png";
-      case SortOrder.LeastCompleted:
         return "assets/sort_completion_max2min.png";
+      case SortOrder.LeastCompleted:
+        return "assets/sort_completion_min2max.png";
     }
   }
 
@@ -224,9 +231,21 @@ class RecentGamesSuccessWidget extends StatelessWidget {
               ? const Center(
                   child: CircularProgressIndicator(),
                 )
-              : const Center(
-                  child: Text('load error'),
-                );
+              : state.recentStatus.isNoGames
+                  ? const Center(
+                      child: Text(
+                        'No recently played games found',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : const Center(
+                      child: Text(
+                        'Load error',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
     });
   }
 }
@@ -247,9 +266,21 @@ class AllGamesSuccessWidget extends StatelessWidget {
               ? const Center(
                   child: CircularProgressIndicator(),
                 )
-              : const Center(
-                  child: Text('load error'),
-                );
+              : state.allStatus.isNoGames
+                  ? const Center(
+                      child: Text(
+                        'No games found on the given Steam profile',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : const Center(
+                      child: Text(
+                        'Load error',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
     });
   }
 }
@@ -262,20 +293,24 @@ class HeaderTitle extends StatelessWidget {
     return BlocBuilder<SteamUserBloc, SteamUserState>(
         builder: ((context, state) {
       if (state is SteamUserLoaded) {
-        User steamuser = state.props.first as User;
-        return Center(
-            child: Row(
+        User steamuser = state.steamuser;
+        return Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const Spacer(),
+            Spacer(),
             ImageRounded(
               imageurl: steamuser.avatarurl,
             ),
-            //Spacer(),
-            Text(' ' + steamuser.personaname),
-            const Spacer(),
+            const SizedBox(
+              width: 5,
+            ),
+            Text(' ${steamuser.personaname}'),
+            const SizedBox(
+              width: 56,
+            ),
+            Spacer(),
           ],
-        ));
+        );
       } else {
         return Container(
           height: 100,
@@ -320,6 +355,7 @@ class GamesSuccessWidget extends StatelessWidget {
                               (item.img_icon_url != '')
                                   ? ImageRounded(imageurl: item.GetIconURL())
                                   : const Text('💀'),
+                              SizedBox(width: 3),
                               Flexible(
                                   child: Padding(
                                       padding: const EdgeInsets.only(
@@ -360,17 +396,17 @@ class GameStatsSnippet extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(bottom: 5.0),
-          child: Text(
-            game.name,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-          ),
-        ),
         Text(
-          'Time spent:  + ${(game.playtime_forever / 60.0).toStringAsFixed(2)}',
-          style: const TextStyle(color: Colors.white, fontSize: 12),
+          game.name,
+          style: const TextStyle(color: Colors.white, fontSize: 18),
+          textAlign: TextAlign.center,
         ),
+        SizedBox(height: 5),
+        Text(
+          'Time spent -  ${(game.playtime_forever / 60.0).toStringAsFixed(2)} hours',
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+        ),
+        SizedBox(height: 10),
         (gameEntry.status.isSuccess)
             ? Flexible(
                 child: GameCompletionIndicatorsSuccess(
@@ -380,7 +416,7 @@ class GameStatsSnippet extends StatelessWidget {
                 ? const CircularProgressIndicator()
                 : const Text(
                     'Game not found on HowLongToBeat.com',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
       ],
     );
@@ -396,6 +432,15 @@ class GameCompletionIndicatorsSuccess extends StatelessWidget {
 
   final HowLongToBeatEntry hltbEntry;
   final Game game;
+
+  Color getProgressBarColor(double completionRate) {
+    return HSLColor.fromAHSL(
+      1,
+      min(100 * completionRate, 360),
+      1,
+      0.5,
+    ).toColor();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -421,33 +466,38 @@ class GameCompletionIndicatorsSuccess extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Average Completion (All playstyles): ${(hltbEntry.gameplayAllPlaystyles / 60).toStringAsFixed(2)}',
-          style: const TextStyle(color: Colors.white, fontSize: 12),
+          'Average Completion Time - ${(hltbEntry.gameplayAllPlaystyles / 60).toStringAsFixed(2)} hours',
+          style: const TextStyle(color: Colors.white, fontSize: 14),
         ),
         LinearProgressIndicator(
-          color: Colors.blueGrey,
+          color: getProgressBarColor(cmplAllPlaystyles),
           value: cmplAllPlaystyles,
         ),
+        SizedBox(height: 7),
         Text(
-          'Main Story Completion: ${(hltbEntry.gameplayMain / 60).toStringAsFixed(2)}',
-          style: const TextStyle(color: Colors.white, fontSize: 12),
+          'Main Story - ${(hltbEntry.gameplayMain / 60).toStringAsFixed(2)} hours',
+          style: const TextStyle(color: Colors.white, fontSize: 14),
         ),
         LinearProgressIndicator(
-          color: Colors.blueGrey,
+          color: getProgressBarColor(cmplMain),
           value: cmplMain,
         ),
+        SizedBox(height: 7),
         Text(
-          'Main+Sides Completion: ${(hltbEntry.gameplayMainExtra / 60).toStringAsFixed(2)}',
-          style: const TextStyle(color: Colors.white, fontSize: 12),
+          'Main+Sides - ${(hltbEntry.gameplayMainExtra / 60).toStringAsFixed(2)} hours',
+          style: const TextStyle(color: Colors.white, fontSize: 14),
         ),
         LinearProgressIndicator(
+          color: getProgressBarColor(cmplMainExtra),
           value: cmplMainExtra,
         ),
+        SizedBox(height: 7),
         Text(
-          '100% Completion: ${(hltbEntry.gameplayCompletionist / 60).toStringAsFixed(2)}',
-          style: const TextStyle(color: Colors.white, fontSize: 12),
+          '100% - ${(hltbEntry.gameplayCompletionist / 60).toStringAsFixed(2)} hours',
+          style: const TextStyle(color: Colors.white, fontSize: 14),
         ),
         LinearProgressIndicator(
+          color: getProgressBarColor(cmpl100),
           value: cmpl100,
         ),
       ],

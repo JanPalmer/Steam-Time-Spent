@@ -23,6 +23,17 @@ class User {
         avatarurl = json['avatarmedium'] ?? '',
         visibilitystate = json['communityvisibilitystate'] ?? 1;
 
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> userMap = <String, dynamic>{};
+    userMap['steamid'] = steamid;
+    userMap['personaname'] = personaname;
+    userMap['profileurl'] = profileurl;
+    userMap['avatarmedium'] = avatarurl;
+    userMap['communityvisibilitystate'] = visibilitystate;
+
+    return userMap;
+  }
+
   static Future<User> fetchUserProfile(String steamID) async {
     String steamAPIkey = '8214D13AC7E97D3848A107CD015F2F3A';
     String url =
@@ -51,5 +62,16 @@ class User {
       return newuser;
     }
     throw Exception('Internet connection error');
+  }
+
+  @override
+  bool operator ==(Object other) {
+    User otherUser = other as User;
+
+    if (this.steamid == otherUser.steamid) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

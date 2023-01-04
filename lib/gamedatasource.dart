@@ -33,24 +33,32 @@ class GameDataSource {
       });
     }
 
+    //print(uri);
+
     final response = await http.get(
       uri,
-      //Uri.parse(url),
     );
 
     if (response.statusCode == 200) {
       // Decoding the received JSON file
-      //print('Parsing response body');
       Map<String, dynamic> responseMap = jsonDecode(response.body);
-      if (responseMap.values.first == null) throw Exception('No user found');
+      //if (responseMap.values.first == null) throw Exception('No user found');
       Map<String, dynamic> gamescountMap = responseMap.values.first;
 
-      if (gamescountMap.values.first == null) throw Exception('No user found');
+      // Check whether there are any recently played games
+      int totalCount = gamescountMap['total_count'] ?? -1;
+      if (totalCount == 0) {
+        return [];
+      }
+
+      // Check whether there are any games on the account
+      int gamesCount = gamescountMap['games_count'] ?? -1;
+      if (gamesCount == 0) {
+        return [];
+      }
+
+      //if (gamescountMap.values.first == null) throw Exception('No user found');
       List<dynamic> gamesMap = gamescountMap.values.last;
-
-      // print(gamesMap.first);
-      // print(gamesMap.length);
-
       List<Game> games = List.empty(growable: true);
 
       for (int i = 0; i < gamesMap.length; i++) {
@@ -59,12 +67,10 @@ class GameDataSource {
         games.add(newgame);
       }
 
-      int len = games.length;
-      print('Number of games: $len');
+      //print(games.length);
 
       return games;
     }
-    print('Connection error');
     throw Exception('Internet connection error');
   }
 

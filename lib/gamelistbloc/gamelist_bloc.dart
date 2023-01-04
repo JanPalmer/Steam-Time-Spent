@@ -35,68 +35,64 @@ class GameListBloc extends Bloc<GameListEvent, GameListLoadedState> {
         recentStatus: GameListStatus.loading,
         allStatus: GameListStatus.loading,
       ));
+
+      //print('Fetching games for ${event.steamid}');
+
       // Fetch recent games data from Steam
       final recentGames = await GameDataSource.fetchGames(steamID, false);
       _deleteSpecialSymbols(recentGames);
-      emit(
-        state.copyWith(
+
+      if (recentGames.isEmpty) {
+        emit(state.copyWith(
           recentGames: recentGames,
-        ),
-      );
+          recentStatus: GameListStatus.noGames,
+        ));
+      } else {
+        emit(state.copyWith(
+          recentGames: recentGames,
+        ));
+      }
+
       // Fetch all games data from Steam
       final allGames = await GameDataSource.fetchGames(steamID, true);
       _deleteSpecialSymbols(allGames);
-      emit(
-        state.copyWith(
+      if (allGames.isEmpty) {
+        emit(state.copyWith(
           allGames: allGames,
-        ),
-      );
+          allStatus: GameListStatus.noGames,
+        ));
+      } else {
+        emit(state.copyWith(
+          allGames: allGames,
+        ));
+      }
 
-      // Create a HLTB completion entry map for all games.
-      // All entries get the 'loading' status.
-      // If an entry is found, it is changed to an actual entry,
-      // with a 'success' status. If, after every game has been tried,
-      // some games still don't have their working HLTB entry,
-      // they are marked as 'error' not found
+      // For missing entries, the ListView will display them as loading.
+      // Once there's been an attempt to find a game, it can result in either
+      // a success - data will be displayed, or error - the entry for a game
+      // will be present, but its status will be marked as error,
+      // so the Listview knows it has not been found
       Map<String, HowLongToBeatEntry> allGameEntries = {};
-      // for (Game game in allGames) {
-      //   allGameEntries[game.name] = HowLongToBeatEntry();
-      // }
-
-      emit(
-        state.copyWith(
-            gameEntries: allGameEntries,
-            recentStatus: GameListStatus.success,
-            allStatus: GameListStatus.success),
-      );
-
-      // // Fetch recent games data entries from HLTB first (more useful for the user)
-
-      Map<String, HowLongToBeatEntry> recentGameEntries =
-          await GameDataSource.fetchHLTBEntries(recentGames, allGameEntries);
-
-      allGameEntries.addAll(recentGameEntries);
-
       emit(
         state.copyWith(
           gameEntries: allGameEntries,
-          reload: true,
-        ),
-      );
-      emit(
-        state.copyWith(
-          gameEntries: allGameEntries,
-          reload: false,
+          recentStatus: (state.recentStatus.isNoGames)
+              ? GameListStatus.noGames
+              : GameListStatus.success,
+          allStatus: (state.allStatus.isNoGames)
+              ? GameListStatus.noGames
+              : GameListStatus.success,
         ),
       );
 
-      // Fetch all games data entries from HLTB (in sets of 10)
-      for (int i = 0; i < allGames.length; i += 10) {
-        Map<String, HowLongToBeatEntry> tmpList =
-            await GameDataSource.fetchHLTBEntries(
-                allGames.sublist(i, min(i + 10, allGames.length)),
-                allGameEntries);
-        allGameEntries.addAll(tmpList);
+      // Fetch recent games data entries from HLTB first (more useful for the user)
+
+      if (recentGames.isNotEmpty) {
+        //print('Fetching recent games');
+        Map<String, HowLongToBeatEntry> recentGameEntries =
+            await GameDataSource.fetchHLTBEntries(recentGames, allGameEntries);
+
+        allGameEntries.addAll(recentGameEntries);
 
         emit(
           state.copyWith(
@@ -111,8 +107,33 @@ class GameListBloc extends Bloc<GameListEvent, GameListLoadedState> {
           ),
         );
       }
+
+      // Fetch all games data entries from HLTB (in sets of 10)
+      if (allGames.isNotEmpty) {
+        //print('Fetching the rest games');
+        for (int i = 0; i < allGames.length; i += 10) {
+          Map<String, HowLongToBeatEntry> tmpList =
+              await GameDataSource.fetchHLTBEntries(
+                  allGames.sublist(i, min(i + 10, allGames.length)),
+                  allGameEntries);
+          allGameEntries.addAll(tmpList);
+
+          emit(
+            state.copyWith(
+              gameEntries: allGameEntries,
+              reload: true,
+            ),
+          );
+          emit(
+            state.copyWith(
+              gameEntries: allGameEntries,
+              reload: false,
+            ),
+          );
+        }
+      }
     } catch (error) {
-      print(error.toString());
+      //print(error.toString());
       emit(state.copyWith(
         recentStatus: GameListStatus.error,
         allStatus: GameListStatus.error,
@@ -121,6 +142,8 @@ class GameListBloc extends Bloc<GameListEvent, GameListLoadedState> {
   }
 
   void _deleteSpecialSymbols(List<Game> games) {
+    if (games.isEmpty) return;
+
     RegExp regExp = RegExp(r'[™|®]');
 
     for (int i = 0; i < games.length; i++) {

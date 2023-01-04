@@ -2,19 +2,27 @@ import 'package:flutter/cupertino.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter/material.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class ImageRounded extends StatelessWidget {
-  const ImageRounded({super.key, required this.imageurl});
+  const ImageRounded({
+    super.key,
+    required this.imageurl,
+    this.imageHeight = 50,
+    this.imageWidth = 50,
+  });
 
   final String imageurl;
+  final double imageHeight;
+  final double imageWidth;
 
   @override
   Widget build(BuildContext context) {
     return CachedNetworkImage(
       imageUrl: imageurl,
       imageBuilder: (context, imageProvider) => Container(
-        width: 50,
-        height: 50,
+        width: imageWidth,
+        height: imageHeight,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
           image: DecorationImage(

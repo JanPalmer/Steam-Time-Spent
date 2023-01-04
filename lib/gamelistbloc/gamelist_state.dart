@@ -5,6 +5,7 @@ enum GameListStatus {
   success,
   error,
   loading,
+  noGames,
 }
 
 extension GameListStatusX on GameListStatus {
@@ -12,6 +13,7 @@ extension GameListStatusX on GameListStatus {
   bool get isSuccess => this == GameListStatus.success;
   bool get isError => this == GameListStatus.error;
   bool get isLoading => this == GameListStatus.loading;
+  bool get isNoGames => this == GameListStatus.noGames;
 }
 
 class GameListLoadedState extends Equatable {

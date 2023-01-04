@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:steamtimespent/game.dart';
-import 'package:steamtimespent/gamedatasource.dart';
 import 'package:steamtimespent/gamelistbloc/gamelist_bloc.dart';
 import 'package:steamtimespent/helpscreen.dart';
 import 'package:steamtimespent/listview.dart';
+import 'package:steamtimespent/recentsearchesbloc/recentsearcheswidget.dart';
+import 'package:steamtimespent/recentsearchesbloc/recentsearches_bloc.dart';
 import 'package:steamtimespent/user.dart';
 import 'package:steamtimespent/userbloc/user_bloc.dart';
 
@@ -26,12 +26,10 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
   String steamID = "";
   InputScreenState currstate = InputScreenState.ready;
   String textPrompt = 'Insert your 64-bit SteamID';
-  //late User steamuser;
 
   TextEditingController nameController = TextEditingController();
   bool isLoading = false;
   User? steamuser;
-  List<Game>? allgames;
 
   void _loadSteamProfile() async {
     setState(() {
@@ -44,16 +42,18 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
       setState(() {
         steamuser = user;
         currstate = InputScreenState.profileLoaded;
-        print(steamuser?.personaname);
+        context
+            .read<RecentSearchesBloc>()
+            .add(AddUserToList(newuser: steamuser!));
+        context.read<RecentSearchesBloc>().add(SaveRecentSearches());
       });
       _navigateToProfileScreen();
     } catch (e) {
       setState(() {
-        //steamuser = null;
         currstate = InputScreenState.fetchingError;
       });
+      textPrompt = 'Could not find a user with the given SteamID64';
       textPrompt = e.toString();
-      print(textPrompt);
       return;
     }
   }
@@ -80,6 +80,14 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    setState(() {
+      context.read<RecentSearchesBloc>().add(GetRecentSearches());
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text('Steam Time Spent')),
@@ -91,6 +99,7 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                     BoxConstraints.loose(const Size(600, double.infinity)),
                 child: Column(
                   children: <Widget>[
+                    const SizedBox(height: 5),
                     Container(
                         alignment: Alignment.center,
                         padding: const EdgeInsets.all(10),
@@ -101,24 +110,21 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                             color: Colors.white,
                           ),
                         )),
-                    SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      child: TextField(
-                        controller: nameController,
-                        decoration: const InputDecoration(
-                          fillColor: Colors.white,
-                          enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white)),
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white)),
-                          labelStyle: TextStyle(color: Colors.white),
-                          labelText: "64-bit SteamID",
-                        ),
-                        style: TextStyle(color: Colors.white),
+                    const SizedBox(height: 5),
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        fillColor: Colors.white,
+                        enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white)),
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white)),
+                        labelStyle: TextStyle(color: Colors.white),
+                        labelText: "64-bit SteamID",
                       ),
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     if (currstate == InputScreenState.loading)
                       const Expanded(
                           child: Center(child: CircularProgressIndicator()))
@@ -136,29 +142,52 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                               _loadSteamProfile();
                             },
                           )),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => HelpScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => const HelpScreen()),
                         );
                       },
                       child: const Text(
                         'How to find your SteamID64',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: Colors.blueGrey,
                             fontSize: 16,
                             fontWeight: FontWeight.bold),
                         textAlign: TextAlign.justify,
                       ),
                     ),
+                    const SizedBox(
+                      height: 15,
+                    ),
                     const Text(
                       'Data loading might take more than a minute, please be patient',
-                      style:
-                          const TextStyle(color: Colors.blueGrey, fontSize: 14),
+                      style: TextStyle(color: Colors.blueGrey, fontSize: 14),
                       textAlign: TextAlign.justify,
                     ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    const Text(
+                      'Recent searches:',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    BlocBuilder<RecentSearchesBloc, RecentSearchesState>(
+                        builder: ((context, state) {
+                      if (state.status.isSuccess) {
+                        return RecentSearchesWidget(
+                            recentSearchesList: state.userList);
+                      } else {
+                        return const CircularProgressIndicator();
+                      }
+                    })),
                   ],
                 ),
               ),
