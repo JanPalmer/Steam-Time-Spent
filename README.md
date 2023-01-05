@@ -16,7 +16,7 @@ Ekran startowy, dostępny zaraz po włączeniu aplikacji, zawiera kilka możliwo
 - Jeśli wcześniej wprowadziliśmy poprawne *SteamID64*, na dole ekranu startowego będzie wyświetlone do 10 ostatnio wyszukanych profilów. Kliknięcie w jeden z nich spowoduje wczytanie statystyk dla danego konta, ułatwiając podglądanie danych dla często wyszukiwanych profilów.
 Dane ostatnich wyszukiwań zapisywane są do pliku. W systemie Windows można je znaleźć w folderze Dokumenty.
 
-![Obraz prezentujący ekran startowy](readme_images\StartScreen.PNG)
+![Obraz prezentujący ekran startowy](readme_images/StartScreen.PNG)
 
 Po wpisaniu poprawnego *SteamID64*, lub wybraniu profilu z Ostatnio Wyszukanych, aplikacja przejdzie do ekranu statystyk. Na górnym pasku wyświetlony zostanie awatar użytkownika oraz nazwa jego profilu.
 Statystyki wyświetlone są w postaci dwóch list. Zakładka *Recent Games* zawiera gry, w które użytkownik grał w ciągu ostatnich 2 tygodni (możliwe, statystyki z tych gier będą go bardziej interesować). Zakładka *All Games* zawiera wpisy dla wszystkich gier obecnych na koncie.
@@ -42,12 +42,12 @@ Nad każdym paskiem wyświetlony jest jego tytuł, a obok niego znajduje się ś
 Poziom wypełnienia oraz kolor paska pozwala na przybliżenie poziomu ukończenia - niski poziom ukończenia przedstawiany jest paskiem wypełnionym w małym stopniu oraz kolorem czerwonym. Im bliżej dany czas odpowiada średniemu czasowi ukończenia, tym pasek jest bardziej wypełniony, oraz zmienia kolor na pomarańczowy, a później na zielony.
 Dla czasów gry powyżej średniego czasu ukończenia, pasek postępu będzie całkowicie wypełniony, a jego kolory mogą wkroczyć na terytorium barw niebieskich, fioletowych, a w końcu z powrotem do czerwonych (kolory zmieniają się wg schematu barw HSL).
 
-![Obraz prezentujący wpis gry znalezionej](readme_images\AverageCompletion.PNG)
+![Obraz prezentujący wpis gry znalezionej](readme_images/AverageCompletion.PNG)
 
 Bezpośrednio po wczytaniu poprawnego profilu Steam, aplikacja rozpoczyna ładowanie statystyk dla każdej gry. Lista będzie się dynamicznie aktualizowała, by pokazać postęp ładowania. Wpisy oczekujące na dane od *howlongtobeat* oznaczone będą okręgiem sygnalizującym ładowanie, a wpisy załadowane pokazują statystyki w sposób opisany wyżej.
 Może się zdarzyć, że przez specyficzny zapis tytułu w bazie danych Steam, lub brak danych na stronie *howlongtobeat*, statystyki dla danej gry nie zostaną znalezione. Wtedy wpis dla takiej gry zostanie wyświetlony z tekstem *Game not found on HowLongToBeat.com*.
 
-![Obraz prezentujący wpis nieznalezionej gry](readme_images\GameNotFound.PNG)
+![Obraz prezentujący wpis nieznalezionej gry](readme_images/GameNotFound.PNG)
 
 ### Testowanie we własnym zakresie
 Jeśli użytkownik aplikacji nie posiada konta Steam, może przetestować działanie na przykładowym koncie o *SteamID64* równym 76561198127214494.
