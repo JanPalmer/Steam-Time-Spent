@@ -51,3 +51,9 @@ Może się zdarzyć, że przez specyficzny zapis tytułu w bazie danych Steam, l
 
 ### Testowanie we własnym zakresie
 Jeśli użytkownik aplikacji nie posiada konta Steam, może przetestować działanie na przykładowym koncie o *SteamID64* równym 76561198127214494.
+
+## Żródła
+- Ekran logowania - https://www.tutorialkart.com/flutter/flutter-login-screen/
+- Wyświetlanie listy, styl komponentów bloc - https://medium.com/flutter-community/flutter-bloc-for-beginners-839e22adb9f5
+- Serializacja dokumentów JSON - https://codewithandrea.com/articles/parse-json-dart/
+- Pobieranie danych z *howlongtobeat.com* inspirowane https://github.com/ckatzorke/howlongtobeat
