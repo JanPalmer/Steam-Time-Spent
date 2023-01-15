@@ -415,6 +415,7 @@ class GameStatsSnippet extends StatelessWidget {
                 : const Text(
                     'Game not found on HowLongToBeat.com',
                     style: TextStyle(color: Colors.white, fontSize: 16),
+                    textAlign: TextAlign.center,
                   ),
       ],
     );
@@ -464,7 +465,7 @@ class GameCompletionIndicatorsSuccess extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Average Completion Time - ${(hltbEntry.gameplayAllPlaystyles / 60).toStringAsFixed(2)} hours',
+          'Average Completion - ${(hltbEntry.gameplayAllPlaystyles / 60).toStringAsFixed(2)} hours',
           style: const TextStyle(color: Colors.white, fontSize: 14),
         ),
         SizedBox(height: 3),
