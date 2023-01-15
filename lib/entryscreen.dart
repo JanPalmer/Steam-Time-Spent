@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:steamtimespent/gamelistbloc/gamelist_bloc.dart';
 import 'package:steamtimespent/helpscreen.dart';
-import 'package:steamtimespent/listview.dart';
+import 'package:steamtimespent/gamelistview.dart';
 import 'package:steamtimespent/recentsearchesbloc/recentsearcheswidget.dart';
 import 'package:steamtimespent/recentsearchesbloc/recentsearches_bloc.dart';
 import 'package:steamtimespent/user.dart';
@@ -50,10 +50,11 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
       _navigateToProfileScreen();
     } catch (e) {
       setState(() {
+        textPrompt = 'Could not find a user with the given SteamID64';
         currstate = InputScreenState.fetchingError;
+        context.read<RecentSearchesBloc>().add(GetRecentSearches());
       });
-      textPrompt = 'Could not find a user with the given SteamID64';
-      textPrompt = e.toString();
+      //textPrompt = e.toString();
       return;
     }
   }
@@ -94,9 +95,11 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
         body: Container(
             color: Colors.black87,
             child: Center(
-              child: ConstrainedBox(
-                constraints:
-                    BoxConstraints.loose(const Size(600, double.infinity)),
+                child: ConstrainedBox(
+              constraints:
+                  BoxConstraints.loose(const Size(600, double.infinity)),
+              child: Padding(
+                padding: const EdgeInsets.all(5.0),
                 child: Column(
                   children: <Widget>[
                     const SizedBox(height: 5),
@@ -105,6 +108,7 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                         padding: const EdgeInsets.all(10),
                         child: Text(
                           textPrompt,
+                          textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 20,
                             color: Colors.white,
@@ -161,19 +165,14 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                       ),
                     ),
                     const SizedBox(
-                      height: 15,
-                    ),
-                    const Text(
-                      'Data loading might take more than a minute, please be patient',
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 14),
-                      textAlign: TextAlign.justify,
-                    ),
-                    const SizedBox(
-                      height: 20,
+                      height: 10,
                     ),
                     const Text(
                       'Recent searches:',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                       textAlign: TextAlign.justify,
                     ),
                     const SizedBox(
@@ -191,6 +190,6 @@ class _StateInputSteamID extends State<SteamIDEntryScreen> {
                   ],
                 ),
               ),
-            )));
+            ))));
   }
 }

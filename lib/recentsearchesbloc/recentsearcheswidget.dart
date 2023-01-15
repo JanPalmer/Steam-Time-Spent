@@ -1,9 +1,10 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:steamtimespent/gamelistbloc/gamelist_bloc.dart';
 import 'package:steamtimespent/imagerounded.dart';
-import 'package:steamtimespent/listview.dart';
+import 'package:steamtimespent/gamelistview.dart';
 import 'package:steamtimespent/recentsearchesbloc/recentsearches_bloc.dart';
 import 'package:steamtimespent/user.dart';
 import 'package:steamtimespent/userbloc/user_bloc.dart';
@@ -26,8 +27,10 @@ class RecentSearchesWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double height = MediaQuery.of(context).size.height - 56;
+
     return ConstrainedBox(
-      constraints: BoxConstraints.loose(const Size(600, double.infinity)),
+      constraints: BoxConstraints.loose(Size(600, min(height, 200))),
       child: Wrap(
         direction: Axis.horizontal,
         alignment: WrapAlignment.start,

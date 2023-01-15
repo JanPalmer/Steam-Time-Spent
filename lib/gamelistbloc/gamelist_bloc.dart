@@ -111,10 +111,12 @@ class GameListBloc extends Bloc<GameListEvent, GameListLoadedState> {
       // Fetch all games data entries from HLTB (in sets of 10)
       if (allGames.isNotEmpty) {
         //print('Fetching the rest games');
-        for (int i = 0; i < allGames.length; i += 10) {
+        const amountPerReload = 5;
+        for (int i = 0; i < allGames.length; i += amountPerReload) {
           Map<String, HowLongToBeatEntry> tmpList =
               await GameDataSource.fetchHLTBEntries(
-                  allGames.sublist(i, min(i + 10, allGames.length)),
+                  allGames.sublist(
+                      i, min(i + amountPerReload, allGames.length)),
                   allGameEntries);
           allGameEntries.addAll(tmpList);
 
